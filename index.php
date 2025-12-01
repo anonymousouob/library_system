@@ -62,6 +62,15 @@ $books=$stmt->fetchAll();
   ?>
     <div class="col-md-6 mb-3">
       <div class="card p-3">
+        <div class="row g-0"> <div class="col-md-4">
+          <?php if(!empty($b['ImagePath']) && file_exists($b['ImagePath'])): ?>
+              <img src="<?= htmlspecialchars($b['ImagePath']) ?>" class="img-fluid rounded-start" alt="<?= htmlspecialchars($b['Title']) ?>" style="height: 150px; object-fit: cover;">
+          <?php else: ?>
+              <div class="bg-light d-flex align-items-center justify-content-center" style="width: 100px;">
+                  <span class="text-muted">無圖片</span>
+              </div>
+          <?php endif; ?>
+        </div>
         <div class="d-flex justify-content-between">
           <div>
             <h5><?= htmlspecialchars($b['Title']) ?></h5>
