@@ -19,8 +19,10 @@
           throw new Exception("帳號或密碼格式不符安全規定 (帳號限英數)");
       }
 
+      $hashed_password = password_hash($p, PASSWORD_DEFAULT);
+
       $stmt=$pdo->prepare("INSERT INTO member (Username, Password, Account, MemberType) VALUES (?, ?, ?, 'Reader')");
-      $stmt->execute([$u, $p, $acc]);
+      $stmt->execute([$u, $hashed_password, $acc]);
       
       echo "<script>alert('註冊成功，請登入'); window.location.href='login.php';</script>";
       exit;

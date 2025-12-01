@@ -35,7 +35,7 @@ if(!$user){
 }
 
 // 驗證密碼 
-if($pwd === $user['Password']){
+if(password_verify($pwd, $user['Password'])){
     // 登入成功
     resetFailures($username);
     
