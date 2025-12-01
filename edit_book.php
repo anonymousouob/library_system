@@ -1,45 +1,57 @@
 <?php
-  require 'db.php';
-  if(!isset($_SESSION['role']) || $_SESSION['role']!='Master') die("No access");
+require 'db.php';
 
-  $id=$_GET['id'];
-  $book=$pdo->query("SELECT * FROM book WHERE BookID=$id")->fetch();
+if(!isset($_SESSION['role']) || $_SESSION['role']!='Master') die("No access");
 
-  if(!$book){ die("Book not found"); }
+$id = $_GET['id'] ?? null;
+if(!$id) die("No ID");
 
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
+$stmt=$pdo->prepare("SELECT * FROM book WHERE BookID=?");
+$stmt->execute([$id]);
+$book = $stmt->fetch();
+
+if(!$book) die("Book not found");
+
+if($_SERVER['REQUEST_METHOD']==='POST'){
     $title = $_POST['title'];
     $author = $_POST['author'];
     $publisher = $_POST['publisher'];
     $year = $_POST['year'];
     $genre = $_POST['genre'];
-    
     $imagePath = $book['ImagePath'];
 
     if(isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK){
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif'])){
-            $new_name = uniqid('book_') . '.' . $ext;
-            $dest = 'images/' . $new_name;
-            
+        $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+
+        if(in_array($ext, ['jpg','jpeg','png','gif'])){
+
+            $newName = uniqid() . "." . $ext;
+            $dest = "images/" . $newName;
+
             if(move_uploaded_file($_FILES['image']['tmp_name'], $dest)){
-                if(!empty($imagePath) && file_exists($imagePath)){
-                    unlink($imagePath); 
+
+                // 刪除舊圖片
+                if(!empty($book['ImagePath']) && file_exists($book['ImagePath'])){
+                    unlink($book['ImagePath']);
                 }
+
                 $imagePath = $dest;
             }
         }
     }
 
-    $stmt = $pdo->prepare("UPDATE book SET Title=?, Author=?, Publisher=?, PublicationYear=?, Genre=?, ImagePath=? WHERE BookID=?");
-    $stmt->execute([$title, $author, $publisher, $year, $genre, $imagePath, $id]);
-    
+    $s = $pdo->prepare("UPDATE book 
+                        SET Title=?, Author=?, Publisher=?, PublicationYear=?, Genre=?, ImagePath=?
+                        WHERE BookID=?");
+    $s->execute([$title,$author,$publisher,$year,$genre,$imagePath,$id]);
+
     header("Location: index.php");
     exit;
 }
 ?>
+
 <html><body>
-  <form method="post" class="container mt-5">
+  <form method="post" enctype="multipart/form-data" class="container mt-5">
   <h3>修改書籍</h3>
   <label>書名</label><input name="title" value="<?= $book['Title'] ?>" class="form-control">
   <label>作者</label><input name="author" value="<?= $book['Author'] ?>" class="form-control">

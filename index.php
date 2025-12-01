@@ -24,7 +24,7 @@ $books=$stmt->fetchAll();
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
   <div class="container">
-    <a class="navbar-brand" href="index.php">圖書館</a>
+    <a class="navbar-brand" href="index.php">zzz圖書館</a>
     <div class="ms-auto">
     <?php if(isset($_SESSION['user_id'])): ?>
       <a class="btn btn-outline-secondary me-2" href="my_loans.php">我的借閱</a>
@@ -60,47 +60,66 @@ $books=$stmt->fetchAll();
     $s2->execute([$b['BookID']]);
     $total=$s2->fetchColumn();
   ?>
-    <div class="col-md-6 mb-3">
-      <div class="card p-3">
-        <div class="row g-0"> <div class="col-md-4">
-          <?php if(!empty($b['ImagePath']) && file_exists($b['ImagePath'])): ?>
-              <img src="<?= htmlspecialchars($b['ImagePath']) ?>" class="img-fluid rounded-start" alt="<?= htmlspecialchars($b['Title']) ?>" style="height: 150px; object-fit: cover;">
+    <div class="col-md-6 mb-4"> <div class="card h-100 shadow-sm"> 
+        <div class="row g-0 h-100">
+          
+          <div class="col-md-4" style="min-height: 200px;"> <?php if(!empty($b['ImagePath']) && file_exists($b['ImagePath'])): ?>
+              <img src="<?= htmlspecialchars($b['ImagePath']) ?>" 
+                   class="img-fluid rounded-start h-100 w-100" 
+                   alt="<?= htmlspecialchars($b['Title']) ?>" 
+                   style="object-fit: cover;">
           <?php else: ?>
-              <div class="bg-light d-flex align-items-center justify-content-center" style="width: 100px;">
+              <div class="bg-light d-flex align-items-center justify-content-center h-100 w-100">
                   <span class="text-muted">無圖片</span>
               </div>
           <?php endif; ?>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>
-            <h5><?= htmlspecialchars($b['Title']) ?></h5>
-            <p class="mb-1">作者：<?= htmlspecialchars($b['Author']) ?></p>
-            <small class="text-muted">出版社：<?= htmlspecialchars($b['Publisher']) ?> | 年份：<?= $b['PublicationYear'] ?> | 類型：<?= htmlspecialchars($b['Genre']) ?></small>
           </div>
-          <div class="text-end">
-            <p class="mb-1">總館藏 <span class="badge bg-secondary"><?= $total ?></span></p>
-            <p class="mb-1">可借閱 <span class="badge bg-success"><?= $avail ?></span></p>
-            <?php if(isset($_SESSION['role']) && $_SESSION['role']=='Master'): ?>
-              <div class="mt-2">
-                <a href="edit_book.php?id=<?= $b['BookID'] ?>" class="btn btn-warning btn-sm">修改</a>
-                <a href="delete_book.php?id=<?= $b['BookID'] ?>" onclick="return confirm('確定刪除?')" class="btn btn-danger btn-sm">刪除</a>
+
+          <div class="col-md-8">
+            <div class="card-body d-flex flex-column h-100">
+              
+              <div class="mb-auto">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title fw-bold text-truncate" title="<?= htmlspecialchars($b['Title']) ?>">
+                        <?= htmlspecialchars($b['Title']) ?>
+                    </h5>
+                </div>
+                <p class="card-text mb-1">作者：<?= htmlspecialchars($b['Author']) ?></p>
+                <small class="text-muted d-block">
+                    出版社：<?= htmlspecialchars($b['Publisher']) ?> <br>
+                    年份：<?= $b['PublicationYear'] ?> | 類型：<?= htmlspecialchars($b['Genre']) ?>
+                </small>
               </div>
-            <?php else: ?>
-              <?php if($avail>0 && isset($_SESSION['user_id'])): ?>
-                <form method="post" action="borrow.php">
-                  <input type="hidden" name="bookid" value="<?= $b['BookID'] ?>">
-                  <button class="btn btn-primary btn-sm mt-2">借閱此書</button>
-                </form>
-              <?php elseif(!isset($_SESSION['user_id'])): ?>
-                <a href="login.php" class="btn btn-primary btn-sm mt-2">登入後借書</a>
-              <?php else: ?>
-                <button class="btn btn-secondary btn-sm mt-2" disabled>暫無可借副本</button>
-              <?php endif; ?>
-            <?php endif; ?>
-          </div>
-        </div>
-      </div>
-    </div>
+
+              <div class="mt-3 border-top pt-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-secondary me-1">總藏: <?= $total ?></span>
+                        <span class="badge bg-success">可借: <?= $avail ?></span>
+                    </div>
+
+                    <div class="text-end">
+                        <?php if(isset($_SESSION['role']) && $_SESSION['role']=='Master'): ?>
+                            <a href="edit_book.php?id=<?= $b['BookID'] ?>" class="btn btn-warning btn-sm">修改</a>
+                            <a href="delete_book.php?id=<?= $b['BookID'] ?>" onclick="return confirm('確定刪除?')" class="btn btn-danger btn-sm">刪除</a>
+                        <?php else: ?>
+                            <?php if($avail>0 && isset($_SESSION['user_id'])): ?>
+                                <form method="post" action="borrow.php" class="d-inline">
+                                    <input type="hidden" name="bookid" value="<?= $b['BookID'] ?>">
+                                    <button class="btn btn-primary btn-sm">借閱</button>
+                                </form>
+                            <?php elseif(!isset($_SESSION['user_id'])): ?>
+                                <a href="login.php" class="btn btn-primary btn-sm">登入</a>
+                            <?php else: ?>
+                                <button class="btn btn-secondary btn-sm" disabled>缺書</button>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+              </div>
+
+            </div>
+          </div> </div> </div> </div>
   <?php endforeach; ?>
   </div>
 </div>

@@ -1,35 +1,43 @@
 <?php
-  require 'db.php';
-  if(!isset($_SESSION['role']) || $_SESSION['role']!='Master') die("No access");
+require 'db.php';
+if(!isset($_SESSION['role']) || $_SESSION['role']!='Master') die("No access");
 
-  if($_SERVER['REQUEST_METHOD']==='POST'){
+if($_SERVER['REQUEST_METHOD']==='POST'){
     $title = $_POST['title'];
     $author = $_POST['author'];
     $publisher = $_POST['publisher'];
     $year = $_POST['year'];
     $genre = $_POST['genre'];
+
     $imagePath = null;
 
     if(isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK){
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif'])){
-            $new_name = uniqid('book_') . '.' . $ext;
-            $dest = 'images/' . $new_name;
+        $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+
+        if(in_array($ext, ['jpg','jpeg','png','gif'])){
+            
+            $newName = uniqid() . "." . $ext;
+            $dest = "images/" . $newName;
+
             if(move_uploaded_file($_FILES['image']['tmp_name'], $dest)){
                 $imagePath = $dest;
             }
         }
     }
 
-    $stmt=$pdo->prepare("INSERT INTO book (Title,Author,Publisher,PublicationYear,Genre,ImagePath) VALUES (?,?,?,?,?,?)");
+    $stmt=$pdo->prepare("
+        INSERT INTO book (Title,Author,Publisher,PublicationYear,Genre,ImagePath) 
+        VALUES (?,?,?,?,?,?)
+    ");
     $stmt->execute([$title, $author, $publisher, $year, $genre, $imagePath]);
-    
+
     $bid=$pdo->lastInsertId();
     $c=$pdo->prepare("INSERT INTO copy(BookID,ShelfLocation,Status) VALUES (?, 'New-Arr','Available')");
     $c->execute([$bid]);
+
     header("Location:index.php");
     exit;
-  }
+}
 ?>
 <html><body class="container mt-5">
   <h3>新增書籍</h3>
