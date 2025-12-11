@@ -39,6 +39,21 @@ CREATE TABLE IF NOT EXISTS loan (
     FOREIGN KEY (MemberID) REFERENCES member(MemberID) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS failed_attempts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    account VARCHAR(255) NOT NULL,
+    ip VARCHAR(45) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS login_logs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    account VARCHAR(255) NOT NULL,
+    ip VARCHAR(45) NOT NULL,
+    result ENUM('success','fail','blocked') NOT NULL,
+    message VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO book (Title, Author, Publisher, PublicationYear, Genre) VALUES ('DataBase','A','B',2025,'Comp.sci');
 INSERT INTO copy (BookID, ShelfLocation, Status) VALUES (1,'A-1-01','Available');
-INSERT INTO member (Username, Password, Account, MemberType) VALUES ('admin','Qwer1234','Admin1234','Master');
