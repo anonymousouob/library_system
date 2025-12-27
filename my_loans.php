@@ -2,6 +2,7 @@
 require 'db.php';
 if(!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
 $uid = $_SESSION['user_id'];
+$overdueCount = $pdo->query("SELECT CountOverdue($uid)")->fetchColumn();
 
 $stmt = $pdo->prepare("SELECT l.*, b.Title, c.ShelfLocation FROM loan l JOIN copy c ON l.CopyID=c.CopyID JOIN book b ON c.BookID=b.BookID WHERE l.MemberID=? ORDER BY l.LoanDate DESC");
 $stmt->execute([$uid]);
@@ -14,6 +15,11 @@ $loans = $stmt->fetchAll();
 </head><body>
 <div class="container container-main mt-4">
   <h3>我的借閱</h3>
+  <?php if($overdueCount > 0): ?>
+    <div class="alert alert-danger">
+        <strong>注意！</strong> 您目前有 <strong><?= $overdueCount ?></strong> 本書已逾期，請盡速歸還。
+    </div>
+  <?php endif; ?>
   <?php if(isset($_SESSION['flash'])){ echo '<div class="alert alert-info">'.$_SESSION['flash'].'</div>'; unset($_SESSION['flash']); } ?>
   <table class="table">
     <thead><tr><th>書名</th><th>借出日</th><th>應還日</th><th>實際還日</th><th>狀態</th><th>操作</th></tr></thead>
